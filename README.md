@@ -13,5 +13,6 @@ tain/test on different hyperparameters: run_.py
 backup original config_s.py before run
 ```
 Train : python run_train.py
-Test : ptthon run_test.py
+
+Test : python run_test.py
 ```
