@@ -108,7 +108,7 @@ class Engine(pl.LightningModule) :
         df['model_prediction'] = np.argmax(gather_pred, 1).tolist()
         df['label'] = gather_target.tolist()
         
-        save_result_dir = os.path.join(config.test_result_dir, config.exp_name)
+        save_result_dir = os.path.join(config_s.test_result_dir, config_s.exp_name)
         if not os.path.exists(save_result_dir):
             os.makedirs(save_result_dir)
         
@@ -136,16 +136,6 @@ class DistillEngine(Engine) :
     def __init__(self, student_model, teacher_model) :
         super(DistillEngine, self).__init__(model = student_model)
         self.teacher_model = teacher_model
-        # ********* teacher model load *********
-        ckpt = torch.load(config.test_checkpoint, map_location="cpu")
-        ckpt["state_dict"].pop("sed_model.head.weight")
-        ckpt["state_dict"].pop("sed_model.head.bias")
-        self.teacher_model.load_state_dict(ckpt["state_dict"], strict=False)
-        print("teacher model loaded!")
-        # # ********* teacher model eval *********
-        # self.teacher_model.eval()
-        # for param in self.teacher_model.parameters() :
-        #     param.requires_grad = False
             
     def training_step(self, batch, batch_idx) :
         x, y = batch["waveform"].to(device), batch["target"].to(device)
@@ -162,6 +152,11 @@ class DistillEngine(Engine) :
         y_hat_teacher = self.teacher_model(x)
         y_hat_teacher = torch.sigmoid(y_hat_teacher['clipwise_output'] / tem) # already sigmoided in original HTS-AT code, but not in this code because of temperature for distillation
                                                                               # the more temperature, the more soft the output of teacher model
+        preds = torch.argmax(y_hat_teacher, dim=1)
+        target = torch.argmax(y, dim=1)
+        acc = (preds == target).float().mean()
+        print(f"⚡⚡teacher acc : {acc}⚡⚡")
+        
         soft_target_loss = nn.BCEWithLogitsLoss()(y_hat_student, y_hat_teacher)
         label_loss = nn.BCEWithLogitsLoss()(y_hat_student, y)
         
@@ -173,4 +168,3 @@ class DistillEngine(Engine) :
         self.log("train_loss", loss, on_epoch=True, prog_bar=True, logger=True, batch_size=config_s.batch_size)
         
         return loss
-    

@@ -1,8 +1,7 @@
-
 import torch
 import os
 
-model_name = "mobilenet_v3_small"
+model_name = "mobilenet_v3_large"
 
 test_result_dir = "/home/jykim/work/MobileNetV3-Large/csvs & confusion matrix"
 checkpoint_path = "/home/jykim/work/MobileNetV3-Large/result/lightning_logs/efficientnet_v2_s/checkpoints/epoch=18-val_loss=0.0028-val_acc=0.9982.ckpt"
@@ -12,12 +11,12 @@ confusion_labels = ['Vehicle', 'Footsteps', 'Other']
 lam = 0.5 # 0.5, 0.3, 0.1, 0.0 
 tem = 1.0 # 1.0 3.0
 
-exp_name = f"V3s_lam_0.5_tem_1.0" # the name of your experiment
+exp_name = f"V3L_lam_{lam}_tem_{tem}" # the name of your experiment
                                       # train < distillation hyperparameter
                                       # test < checkpoint_path.split('/')[-1][:-5]
 
 num_gpu = [0]
-os.environ["CUDA_VISIBLE_DEVICES"] =f"0"
+os.environ["CUDA_VISIBLE_DEVICES"] =f"{num_gpu[0]}"
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
 max_epoch = 30
 

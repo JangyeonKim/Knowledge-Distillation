@@ -39,7 +39,7 @@ def train() :
     val_dataloader = DataLoader(val_dataset, batch_size=config_s.batch_size, shuffle=False, num_workers=config_s.num_workers)
 
     model = model_dict[config_s.model_name]
-    teacher_model =  HTSAT_Swin_Transformer(
+    sed_model =  HTSAT_Swin_Transformer(
         spec_size=config.htsat_spec_size,
         patch_size=config.htsat_patch_size,
         in_chans=1,
@@ -51,8 +51,8 @@ def train() :
         patch_stride=config.htsat_stride,
         num_heads=config.htsat_num_head
     )
-    
-    engine = DistillEngine(model, teacher_model)
+        
+    engine = DistillEngine(student_model=model, teacher_model=sed_model)
     
     checkpoint_callback = ModelCheckpoint(
     save_top_k = 10,
@@ -79,6 +79,20 @@ def train() :
         gradient_clip_val=1.0,
         logger = logger
     )
+
+    
+    # ********* teacher model load *********
+    ckpt = torch.load(config.test_checkpoint, map_location="cpu")
+    ckpt["state_dict"].pop("sed_model.head.weight")
+    ckpt["state_dict"].pop("sed_model.head.bias")
+    
+    new_ckpt_state_dict = {}
+    for key,value in ckpt["state_dict"].items() :
+        new_key = key.replace("sed_model.", "")
+        new_ckpt_state_dict[new_key] = value
+    
+    sed_model.load_state_dict(new_ckpt_state_dict, strict=False)
+    print("teacher model loaded!")
     
     trainer.fit(engine, train_dataloader, val_dataloader)
     
@@ -94,7 +108,7 @@ def test() :
 
     trainer = pl.Trainer(
     deterministic=False,
-    devices = config.num_gpu, 
+    devices = config_s.num_gpu, 
     auto_lr_find = True,    
     sync_batchnorm = True,
     checkpoint_callback = False,

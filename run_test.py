@@ -1,18 +1,29 @@
+import subprocess
+import os
+import glob
 
+path = "/home/jykim/work/Knowledge-Distillation/result/*/*/*/*.ckpt"
+
+checkpoint_path_list = glob.glob(path)
+
+for checkpoint in checkpoint_path_list :
+    exp_name = checkpoint.split('/')[-4] + "-" + checkpoint.split('/')[-1][:-5]
+    with open("config_s_tmp.py", "w") as file :
+        file.write(f"""
 import torch
 import os
 
-model_name = "mobilenet_v3_small"
+model_name = "mobilenet_v3_large"
 
-test_result_dir = "/home/jykim/work/MobileNetV3-Large/csvs & confusion matrix"
-checkpoint_path = "/home/jykim/work/MobileNetV3-Large/result/lightning_logs/efficientnet_v2_s/checkpoints/epoch=18-val_loss=0.0028-val_acc=0.9982.ckpt"
+test_result_dir = "/home/jykim/work/Knowledge-Distillation/csvs & confusion matrix"
+checkpoint_path = "{checkpoint}"
 
 confusion_labels = ['Vehicle', 'Footsteps', 'Other']
 
-lam = 0.5 # 0.5, 0.3, 0.1, 0.0 
-tem = 1.0 # 1.0 3.0
+lam = None # 0.5, 0.3, 0.1, 0.0 
+tem = None # 1.0 3.0
 
-exp_name = f"V3s_lam_0.5_tem_1.0" # the name of your experiment
+exp_name = f"{exp_name}" # the name of your experiment
                                       # train < distillation hyperparameter
                                       # test < checkpoint_path.split('/')[-1][:-5]
 
@@ -46,3 +57,7 @@ pad_mode = 'reflect'
 ref = 1.0
 amin = 1e-10
 top_db = None
+"""
+)
+        # subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
+        # subprocess.call(["python", "main.py", "--mode", "test"])
