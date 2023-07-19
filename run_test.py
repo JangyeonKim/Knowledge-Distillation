@@ -59,5 +59,5 @@ amin = 1e-10
 top_db = None
 """
 )
-        # subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
-        # subprocess.call(["python", "main.py", "--mode", "test"])
+        subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
+        subprocess.call(["python", "main.py", "--mode", "test"])
