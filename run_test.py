@@ -7,7 +7,7 @@ path = "/home/jykim/work/Knowledge-Distillation/result/*/*/*/*.ckpt"
 checkpoint_path_list = glob.glob(path)
 
 for checkpoint in checkpoint_path_list :
-    exp_name = checkpoint.split('/')[-4] + "-" + checkpoint.split('/')[-1][:-5]
+    exp_name = checkpoint.split('/')[-4] + "/" + checkpoint.split('/')[-1][:-5]
     with open("config_s_tmp.py", "w") as file :
         file.write(f"""
 import torch
