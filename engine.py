@@ -149,7 +149,7 @@ class DistillEngine(Engine) :
         for param in self.teacher_model.parameters() :
             param.requires_grad = False
 
-        y_hat_teacher = self.teacher_model(x) ; pdb.set_trace()
+        y_hat_teacher = self.teacher_model(x)
         y_hat_teacher = torch.sigmoid(y_hat_teacher['clipwise_output'] / tem) # already sigmoided in original HTS-AT code, but not in this code because of temperature for distillation
                                                                               # the more temperature, the more soft the output of teacher model
         preds = torch.argmax(y_hat_teacher, dim=1)
