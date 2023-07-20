@@ -8,12 +8,18 @@ checkpoint_path_list = glob.glob(path)
 
 for checkpoint in checkpoint_path_list :
     exp_name = checkpoint.split('/')[-4] + "/" + checkpoint.split('/')[-1][:-5]
+    if "V3L" in checkpoint.split('/')[-4] :
+        model_name = "mobilenet_v3_large"
+    elif "V3s" in checkpoint.split('/')[-4] :
+        model_name = "mobilenet_v3_small"
+    else :
+        print("model name error")
     with open("config_s_tmp.py", "w") as file :
         file.write(f"""
 import torch
 import os
 
-model_name = "mobilenet_v3_large"
+model_name = "{model_name}"
 
 test_result_dir = "/home/jykim/work/Knowledge-Distillation/csvs & confusion matrix"
 checkpoint_path = "{checkpoint}"
@@ -59,5 +65,5 @@ amin = 1e-10
 top_db = None
 """
 )
-        subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
-        subprocess.call(["python", "main.py", "--mode", "test"])
+    subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
+    subprocess.call(["python", "main.py", "--mode", "test"])

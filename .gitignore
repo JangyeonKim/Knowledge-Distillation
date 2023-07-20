@@ -160,3 +160,6 @@ cython_debug/
 #.idea/
 
 /result
+/csvs & confusion matrix
+/tmp.ipynb
+/lightning_logs

@@ -97,7 +97,7 @@ def train() :
     trainer.fit(engine, train_dataloader, val_dataloader)
     
 def test() : 
-    lf.utilities.seed.seed_everything(config.random_seed)
+    lf.utilities.seed.seed_everything(config_s.random_seed)
     
     test_dataset = JY_Dataset(dataset = np.load(os.path.join(config_s.dataset_path, "test.npy"), allow_pickle = True), config = config_s)
     test_dataloader = DataLoader(test_dataset, batch_size=config_s.batch_size, shuffle=False, num_workers=config_s.num_workers)
@@ -118,8 +118,21 @@ def test() :
     gradient_clip_val=1.0
     )
     
+
+    
     if config_s.checkpoint_path is not None :
-        trainer.test(model = engine, test_dataloaders = test_dataloader, ckpt_path = config_s.checkpoint_path)
+        ckpt = torch.load(config_s.checkpoint_path, map_location="cpu")
+        new_ckpt_state_dict = {}
+        for key,value in ckpt["state_dict"].items() :
+            if "teacher_model" not in key :
+                new_key = key.replace("model.", "")
+                new_ckpt_state_dict[new_key] = value
+        
+        # import pdb; pdb.set_trace()
+        model.load_state_dict(new_ckpt_state_dict)
+        # import pdb; pdb.set_trace()
+        # trainer.test(model = engine, test_dataloaders = test_dataloader, ckpt_path = config_s.checkpoint_path)
+        trainer.test(model = engine, test_dataloaders = test_dataloader)
         print("checkpoint loaded")
     else :
         print("checkpoint not loaded")

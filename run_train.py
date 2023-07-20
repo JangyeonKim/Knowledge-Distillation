@@ -1,16 +1,22 @@
 import subprocess
 
+model = ["mobilenet_v3_large", "mobilenet_v3_small"]
 lamd = [0.5, 0.3, 0.1, 0.0] 
 temp = [1.0, 3.0]
 
-for t in temp :
-    for l in lamd :
-        with open("config_s_tmp.py", "w") as file :
-            file.write(f"""
+for m in model :
+    for t in temp :
+        for l in lamd :
+            if m == "mobilenet_v3_large" :
+                n = "V3L"
+            elif m == "mobilenet_v3_small" :
+                n = "V3s"
+            with open("config_s_tmp.py", "w") as file :
+                file.write(f"""
 import torch
 import os
 
-model_name = "mobilenet_v3_small"
+model_name = "{m}"
 
 test_result_dir = "/home/jykim/work/MobileNetV3-Large/csvs & confusion matrix"
 checkpoint_path = "/home/jykim/work/MobileNetV3-Large/result/lightning_logs/efficientnet_v2_s/checkpoints/epoch=18-val_loss=0.0028-val_acc=0.9982.ckpt"
@@ -20,14 +26,14 @@ confusion_labels = ['Vehicle', 'Footsteps', 'Other']
 lam = {l} # 0.5, 0.3, 0.1, 0.0 
 tem = {t} # 1.0 3.0
 
-exp_name = f"V3s_lam_{l}_tem_{t}" # the name of your experiment
-                                      # train < distillation hyperparameter
-                                      # test < checkpoint_path.split('/')[-1][:-5]
+exp_name = f"{n}_lam_{l}_tem_{t}" # the name of your experiment
+                                    # train < distillation hyperparameter
+                                    # test < checkpoint_path.split('/')[-1][:-5]
 
 num_gpu = [0]
 os.environ["CUDA_VISIBLE_DEVICES"] =f"0"
 device = torch.device(f"cuda" if torch.cuda.is_available() else "cpu")
-max_epoch = 30
+max_epoch = 10
 
 random_seed = 42
 
@@ -55,6 +61,6 @@ ref = 1.0
 amin = 1e-10
 top_db = None
 """
-)
-        subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
-        subprocess.call(["python", "main.py", "--mode", "train"])
+    )
+            subprocess.call(["mv", "config_s_tmp.py", "config_s.py"])
+            subprocess.call(["python", "main.py", "--mode", "train"])

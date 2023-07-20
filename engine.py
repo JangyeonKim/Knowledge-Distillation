@@ -149,19 +149,18 @@ class DistillEngine(Engine) :
         for param in self.teacher_model.parameters() :
             param.requires_grad = False
 
-        y_hat_teacher = self.teacher_model(x)
+        y_hat_teacher = self.teacher_model(x) ; pdb.set_trace()
         y_hat_teacher = torch.sigmoid(y_hat_teacher['clipwise_output'] / tem) # already sigmoided in original HTS-AT code, but not in this code because of temperature for distillation
                                                                               # the more temperature, the more soft the output of teacher model
         preds = torch.argmax(y_hat_teacher, dim=1)
         target = torch.argmax(y, dim=1)
         acc = (preds == target).float().mean()
-        print(f"⚡⚡teacher acc : {acc}⚡⚡")
+        # print(f"⚡⚡teacher acc : {acc}⚡⚡")
         
         soft_target_loss = nn.BCEWithLogitsLoss()(y_hat_student, y_hat_teacher)
         label_loss = nn.BCEWithLogitsLoss()(y_hat_student, y)
         
         loss = lam * label_loss + (1 - lam) * soft_target_loss
-        
         
         self.log("distillation_loss", soft_target_loss, on_epoch=True, prog_bar=True, logger=True, batch_size=config_s.batch_size)
         self.log("label_loss", label_loss, on_epoch=True, prog_bar=True, logger=True, batch_size=config_s.batch_size)
